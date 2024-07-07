@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'images/favicon.ico' %}" rel="icon" type="image/x-icon">
+    <title>Movie Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/movie.css' %}">
+</head>
+<body style="background-image: url('{% static 'images/movie-image.jpg' %}'); color: white; background-attachment: fixed;">
+    <div class="header" align="right">
+        <div class="menu" align="right">
+            <a href="/">Home</a>
+                <a href="/user/latestmovies">Latest Movies</a>
+                <a href="/user/mylist">My List</a>
+                <a href="/user/logout">Logout</a>
+        </div>
+    </div><br><br>
+    <div align="right"><a href="/movie/addmovie" class="upload-button">Upload Movie</a></div>
+    <div class="section">
+        <h3>Movie Dashboard</h3>
+        {% for movie in movie_list %}
+            <div class="movie">
+                <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
+                <div class="movie-details">
+                    <h4>{{ movie.title }}</h4>
+                    <p>{{ movie.overview }}</p>
+                    <p>{{ movie.genre }}</p>
+                    <small><i class="fa fa-eye"></i>
+                        {% load my_filter %}
+                        {% if movie.views <= 999 %}
+                            {{ movie.views }}
+                        {% elif movie.views <= 1000 and movie.views <= 999999 %}
+                            {{ movie.views|countkm:1000 }}K+
+                        {% else %}
+                            {{ movie.views|countkm:1000000 }}M+
+                        {% endif %}
+                    </small>
+                    <div class="action-buttons">
+                        <a href="/movie/view/{{ movie.id }}" class="movie-details">
+                            <button>View</button>
+                        </a>
+                        <a href="/movie/editmovie/{{ movie.id }}" class="movie-details">
+                            <button>Edit</button>
+                        </a>
+                        <form action="/movie/deletemovie/{{ movie.id }}" method="POST" class="movie-details">
+                            {% csrf_token %}
+                            <button type="submit">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div><br><br><br><br><br><br><br><br>
+    <div class="footer">
+        <div class="social-icons">
+            <a href="#"><i class="fa fa-instagram"></i></a>
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-youtube"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+        </div>
+        <small>SHOWTIME</small>
+        <small>All Rights Reserved</small>
+        <small>© SHOWTIME . Powered by IDSERVICER</small>
+    </div>
+</body>
+</html>

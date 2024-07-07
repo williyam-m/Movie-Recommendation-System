@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'images/favicon.ico' %}" rel="icon" type="image/x-icon">
+    <title>SHOWTIME</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+      <link rel="stylesheet" href="{% static 'css/movie.css' %}">
+</head>
+<body style="background-image: url('{% static 'images/movie-image.jpg' %}'); color: white; background-attachment: fixed;">
+    <div class="header">
+        <div class="menu">
+                <a href="/user/dashboard">Dashboard</a>
+                <a href="/user/latestmovies">Latest Movies</a>
+                <a href="/user/mylist">My List</a>
+                <a href="/user/logout">Logout</a>
+        </div>
+    </div>
+    <div class="search-box">
+        <form action="/user/search" method="POST">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Movie Name">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if last_seen_movie %}
+        <div class="section">
+            <h3>Continue Playing</h3>
+            <div class="movie">
+                <img src="{{ last_seen_movie.movie_image.url }}" alt="{{ last_seen_movie.title }}">
+                <div class="movie-details">
+                    <h4>{{ last_seen_movie.title }}</h4>
+                    <p>{{ last_seen_movie.overview }}</p>
+                    <p>{{ last_seen_movie.genre }}</p>
+                    <small><i class="fa fa-eye"></i>
+                        {% load my_filter %}
+                        {% if last_seen_movie.views <= 999 %}
+                            {{ last_seen_movie.views }}
+                        {% elif last_seen_movie.views <= 1000 and last_seen_movie.views <= 999999 %}
+                            {{ last_seen_movie.views|countkm:1000 }}K+
+                        {% else %}
+                            {{ last_seen_movie.views|countkm:1000000 }}M+
+                        {% endif %}
+                    </small>
+                    <a href="/movie/view/{{ last_seen_movie.id }}"><button>VIEW</button></a>
+                </div>
+            </div>
+        </div>
+  {% endif %}
+        <div class="section">
+            <h3>Recommendation</h3>
+            {% for movie in movie_list reversed %}
+                <div class="movie">
+                    <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
+                    <div class="movie-details">
+                        <h4>{{ movie.title }}</h4>
+                        <p>{{ movie.overview }}</p>
+                        <p>{{ movie.genre }}</p>
+                        <small><i class="fa fa-eye"></i>
+                            {% load my_filter %}
+                            {% if movie.views <= 999 %}
+                                {{ movie.views }}
+                            {% elif movie.views <= 1000 and movie.views <= 999999 %}
+                                {{ movie.views|countkm:1000 }}K+
+                            {% else %}
+                                {{ movie.views|countkm:1000000 }}M+
+                            {% endif %}
+                        </small>
+                        <a href="/movie/view/{{ movie.id }}"><button>VIEW</button></a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div><br><br><br><br><br><br><br><br>
+    <div class="footer">
+        <div class="social-icons">
+            <a href="#"><i class="fa fa-instagram"></i></a>
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-youtube"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+        </div>
+        <small>SHOWTIME</small>
+        <small>All Rights Reserved</small>
+        <small>© SHOWTIME . Powered by IDSERVICER</small>
+    </div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'images/favicon.ico' %}" rel="icon" type="image/x-icon">
+    <title>{{ movie.title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/movie-view.css' %}">
+</head>
+<body style="background-image: url('{% static 'images/movie-image.jpg' %}'); color: white; background-attachment: fixed;">
+    <div class="header">
+        <a href="/user/latestmovies">Latest Movies</a>
+        <a href="/user/mylist">My List</a>
+        <a href="/user/logout">Logout</a>
+    </div>
+    <div class="content">
+        <div class="movie-details">
+            <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
+            <h2>{{ movie.title }}</h2>
+            <p>{{ movie.overview }}</p>
+            <p><strong>Genre:</strong> {{ movie.genre }}</p>
+            <small><i class="fa fa-eye"></i>
+                {% load my_filter %}
+                {% if movie.views <= 999 %}
+                    {{ movie.views }}
+                {% elif movie.views <= 1000 and movie.views <= 999999 %}
+                    {{ movie.views|countkm:1000 }}K+
+                {% else %}
+                    {{ movie.views|countkm:1000000 }}M+
+                {% endif %}
+            </small>
+            <small><i class="fa fa-thumbs-up"></i> {{ movie.no_of_likes }} Likes</small>
+            <button onclick="document.getElementById('movie-video').style.display='block'">Play Movie</button>
+            <video id="movie-video" controls style="display:none;">
+                <source src="{{ movie.movie_video.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="action-buttons">
+                <form action="{% url 'like' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="movieid" value="{{ movie.id }}">
+                    <button type="submit" class="{% if like %}liked{% endif %}"><i class="fa fa-thumbs-up"></i> {% if like %}Liked{% else %}Like{% endif %}</button>
+                </form>
+                <form action="{% url 'bookmark' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="movieid" value="{{ movie.id }}">
+                    <button type="submit" class="{% if bookmark %}bookmarked{% endif %}"><i class="fa fa-bookmark"></i> {% if bookmark %}Bookmarked{% else %}Bookmark{% endif %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="social-icons">
+            <a href="#"><i class="fa fa-instagram"></i></a>
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-youtube"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+        </div>
+        <small>SHOWTIME</small>
+        <small>All Rights Reserved</small>
+        <small>© SHOWTIME . Powered by IDSERVICER</small>
+    </div>
+</body>
+</html>

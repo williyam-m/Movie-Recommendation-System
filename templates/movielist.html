@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'images/favicon.ico' %}" rel="icon" type="image/x-icon">
+    <title>Latest Movies</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/movie.css' %}">
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .pagination a, .pagination span {
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .pagination .current {
+            background-color: red;
+        }
+    </style>
+</head>
+<body style="background-image: url('{% static 'images/movie-image.jpg' %}'); color: white; background-attachment: fixed;">
+<div class="header">
+        <div class="menu">
+            <a href="/">Home</a>
+                <a href="/user/dashboard">Dashboard</a>
+                <a href="/user/mylist">My List</a>
+                <a href="/user/logout">Logout</a>
+        </div>
+    </div>
+    <div class="section">
+        {% for movie in page_obj %}
+        <div class="movie">
+            <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
+            <div class="movie-details">
+                <h4>{{ movie.title }}</h4>
+                <p>{{ movie.overview }}</p>
+                <p>{{ movie.genre }}</p>
+                <small><i class="fa fa-eye"></i>
+                    {% load my_filter %}
+                    {% if movie.views <= 999 %}
+                        {{ movie.views }}
+                    {% elif movie.views <= 1000 and movie.views <= 999999 %}
+                        {{ movie.views|countkm:1000 }}K+
+                    {% else %}
+                        {{ movie.views|countkm:1000000 }}M+
+                    {% endif %}
+                </small>
+                <a href="/movie/view/{{ movie.id }}"><button>VIEW</button></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span class="current">{{ page_obj.number }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div><br><br><br><br><br><br><br><br>
+    <div class="footer">
+        <div class="social-icons">
+            <a href="#"><i class="fa fa-instagram"></i></a>
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-youtube"></i></a>
+            <a href="#"><i class="fa fa-linkedin"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+        </div>
+        <small>SHOWTIME</small>
+        <small>All Rights Reserved</small>
+        <small>© SHOWTIME . Powered by IDSERVICER</small>
+    </div>
+</body>
+</html>

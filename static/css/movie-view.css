@@ -1,0 +1,95 @@
+body {
+            background-image: url("{% static 'images/movie-image.jpg' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: small;
+            margin: 0;
+            padding: 0;
+        }
+        .header, .footer {
+            background-color: red;
+            padding: 10px;
+            text-align: center;
+        }
+        .header a, .footer a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        .header a:hover, .footer a:hover {
+            color: black;
+        }
+        .content {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .movie-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .movie-details img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .movie-details h2, .movie-details p, .movie-details small {
+            margin: 10px 0;
+        }
+        .movie-details button {
+            border: none;
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .movie-details button:hover {
+            background-color: darkred;
+        }
+        .movie-details video {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .footer small {
+            display: block;
+            margin: 10px 0;
+        }
+        .social-icons i {
+            color: white;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        .social-icons i:hover {
+            color: black;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .action-buttons form {
+            display: inline;
+        }
+        .action-buttons button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .action-buttons button.liked, .action-buttons button.bookmarked {
+            color: green;
+        }
