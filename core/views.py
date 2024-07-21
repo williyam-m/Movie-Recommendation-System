@@ -8,7 +8,13 @@ from django.conf import settings as conf_settings
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse import csr_matrix
+from sklearn.metrics.pairwise import cosine_similarity
 from itertools import chain
+from django.db.models import Q
+import numpy as np
+import pandas as pd
 import os
 import re
 import uuid
@@ -41,21 +47,81 @@ def searchMovie(request):
 
         return render(request, 'movielist.html', {'page_obj': page_obj})
 
+def get_movie_recommendations(all_movies, liked_movies, suggestion_count=10):
+    # Create a DataFrame to hold movie data
+    movies_data = {
+        'id': [str(movie.id) for movie in all_movies],
+        'title': [movie.title for movie in all_movies],
+        'overview': [movie.overview for movie in all_movies],
+        'genre': [movie.genre for movie in all_movies]
+    }
 
+    df_movies = pd.DataFrame(movies_data)
 
-@login_required(login_url = 'signin')
+    # Combine the title, overview, and genre to create a single feature
+    df_movies['features'] = df_movies['title'] + " " + df_movies['overview'] + " " + df_movies['genre']
+
+    # Vectorize the features
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(df_movies['features'])
+
+    # Create a combined feature vector for liked movies
+    liked_movie_indices = [df_movies[df_movies['id'] == str(movie.id)].index[0] for movie in liked_movies]
+    liked_movie_matrix = tfidf_matrix[liked_movie_indices]
+    liked_movie_vector = liked_movie_matrix.mean(axis=0)
+
+    # Convert to numpy array
+    liked_movie_vector = np.asarray(liked_movie_vector)
+
+    # Calculate cosine similarity between liked movie vector and all movie vectors
+    cosine_sim = cosine_similarity(liked_movie_vector, tfidf_matrix).flatten()
+
+    # Get the indices of the top suggested movies
+    similar_indices = cosine_sim.argsort()[-suggestion_count:][::-1]
+
+    # Get the movie IDs of the top suggested movies
+    recommended_movie_ids = df_movies.iloc[similar_indices]['id'].tolist()
+
+    return recommended_movie_ids
+
+@login_required(login_url='signin')
 def home(request):
-    user = User.objects.get(username=request.user.username)
+    user = request.user
 
-    
-    movie_list = Movie.objects.all()
+    historys = History.objects.filter(user_id=user.id)
+    bookmarks = Bookmark.objects.filter(user_id=user.id)
+    likes = Like.objects.filter(user_id=user.id)
+
+    all_movies = Movie.objects.all()
+    user_interested_movies = []
+
+    for like in likes:
+        user_interested_movies.append(Movie.objects.get(id=like.movie_id))
+    for history in historys:
+        user_interested_movies.append(Movie.objects.get(id=history.movie_id))
+    for bookmark in bookmarks:
+        user_interested_movies.append(Movie.objects.get(id=bookmark.movie_id))
+
+    recommended_movies = None
+    print(len(user_interested_movies))
+
+    if len(user_interested_movies) > 1:
+        recommended_movie_ids = get_movie_recommendations(all_movies, user_interested_movies, suggestion_count=min(len(user_interested_movies) - 1, 10))
+
+        # Fetch the recommended movie objects
+        recommended_movies = Movie.objects.filter(id__in=recommended_movie_ids)
+
     last_seen_movie = None
-    if len(movie_list) > 0:
-        last_seen_movie = movie_list[len(movie_list) - 1]
+    if historys.exists():
+        last_seen = historys.latest('id')
+        last_seen_movie = Movie.objects.get(id=last_seen.movie_id)
 
-    return render(request, 'home.html', {'user' : user,
-        'movie_list':movie_list, 'last_seen_movie':last_seen_movie})
-
+    return render(request, 'home.html', {
+        'user': user,
+        'movie_list': all_movies,
+        'recommended_movies': recommended_movies,
+        'last_seen_movie': last_seen_movie,
+    })
 
 @login_required(login_url='userSignin')
 def myList(request):
@@ -193,8 +259,6 @@ def editMovie(request, movieid):
     if (movie.user != request.user.username):
         return redirect('/')
     if request.method == 'POST':
-        print(request.POST)
-
         title = request.POST['title']
         overview = request.POST['overview']
         genre = request.POST['genre']
@@ -235,23 +299,22 @@ def bookmark(request):
 def like(request):
     if request.method == 'POST':
         movieid = request.POST['movieid']
-        if request.user.first_name != "":
-            if Like.objects.filter(user_id = request.user.id, movie_id = movieid).first():
-                like_object = Like.objects.get(user_id = request.user.id, movie_id = movieid)
-                like_object.delete()
+        if Like.objects.filter(user_id=request.user.id, movie_id=movieid).first():
+            like_object = Like.objects.get(user_id=request.user.id, movie_id=movieid)
+            like_object.delete()
 
-                movie = Movie.objects.get(id=movieid)
-                movie.no_of_likes = movie.no_of_likes - 1
-                movie.save()
-                return redirect('/movie/view/' + movieid)
-            else:
-                like_object = Like.objects.create(user_id = request.user.id, movie_id = movieid)
-                like_object.save()
+            movie = Movie.objects.get(id=movieid)
+            movie.no_of_likes = movie.no_of_likes - 1
+            movie.save()
 
-                movie = Movie.objects.get(id=movieid)
-                movie.no_of_likes = movie.no_of_likes + 1
-                movie.save()
-                return redirect('/movie/view/' + movieid)
+        else:
+            like_object = Like.objects.create(user_id=request.user.id, movie_id=movieid)
+            like_object.save()
+
+            movie = Movie.objects.get(id=movieid)
+            movie.no_of_likes = movie.no_of_likes + 1
+            movie.save()
+
         return redirect('/movie/view/' + movieid)
     return redirect('/')
 

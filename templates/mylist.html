@@ -25,7 +25,7 @@
         <div class="tab" onclick="showTab('likes')">Likes</div>
     </div>
     <div id="bookmarks" class="content active">
-        {% for movie in bookmarks_movie_list %}
+        {% for movie in bookmarks_movie_list reversed %}
         <div class="movie">
             <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
             <div class="movie-details">
@@ -51,7 +51,7 @@
     </div>
 
     <div id="history" class="content">
-        {% for movie in history_movie_list %}
+        {% for movie in history_movie_list reversed %}
         <div class="movie">
             <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
             <div class="movie-details">
@@ -77,7 +77,7 @@
     </div>
 
     <div id="likes" class="content">
-        {% for movie in likes_movie_list %}
+        {% for movie in likes_movie_list reversed %}
         <div class="movie">
             <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
             <div class="movie-details">

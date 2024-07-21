@@ -54,8 +54,11 @@
         </div>
   {% endif %}
         <div class="section">
-            <h3>Recommendation</h3>
-            {% for movie in movie_list reversed %}
+        <h3>Recommendation</h3>
+        {% if recommended_movies == None %}
+            <p>Currently, we don't have enough data to provide movie recommendations for you. Please continue watching, liking, and bookmarking movies to get personalized suggestions.</p>
+        {% else %}
+            {% for movie in recommended_movies reversed %}
                 <div class="movie">
                     <img src="{{ movie.movie_image.url }}" alt="{{ movie.title }}">
                     <div class="movie-details">
@@ -76,7 +79,8 @@
                     </div>
                 </div>
             {% endfor %}
-        </div><br><br><br><br><br><br><br><br>
+        {% endif %}
+        </div><br><br><br><br><br><br><br><br><br><br><br>
     <div class="footer">
         <div class="social-icons">
             <a href="#"><i class="fa fa-instagram"></i></a>
